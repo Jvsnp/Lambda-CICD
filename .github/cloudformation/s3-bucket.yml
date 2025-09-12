@@ -9,6 +9,7 @@ Parameters:
       - dev
       - staging
       - prod
+      - test
     Default: test
 
 Resources:
