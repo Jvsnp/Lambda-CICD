@@ -1,6 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-# Updated CloudFormation template for CI/CD
-Description: S3 bucket for CI/CD pipeline testing
+Description: S3 bucket for CI/CD pipeline
 
 Parameters:
   environment:
@@ -8,9 +7,8 @@ Parameters:
     Description: The environment name (e.g., dev, staging, prod)
     AllowedValues:
       - dev
-      - staging
+      - staging  
       - prod
-      - test
     Default: dev
 
 Resources:
