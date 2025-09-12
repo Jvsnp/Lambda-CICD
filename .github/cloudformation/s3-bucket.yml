@@ -1,4 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
+# Updated CloudFormation template for CI/CD
 Description: S3 bucket for CI/CD pipeline testing
 
 Parameters:
