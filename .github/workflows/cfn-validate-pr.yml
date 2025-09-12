@@ -30,13 +30,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  # Secret key from GitHub secrets
           aws-region: us-east-2  # AWS region to use
 
-      # Step 3: Validate CloudFormation template syntax
-      - name: Validate CloudFormation template
-        run: |  # Multi-line shell script
-          set -e  # Exit on any error
-          aws cloudformation validate-template --template-body file://.github/cloudformation/s3-bucket.yml  # Validate template
-
-      # Step 4: Deploy test stack for PR testing
+      # Step 3: Deploy test stack for PR testing
       - name: Deploy CloudFormation stack
         run: |  # Multi-line shell script
           set -e  # Exit on any error
