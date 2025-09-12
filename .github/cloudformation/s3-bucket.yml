@@ -19,6 +19,8 @@ Resources:
       Tags:
         - Key: Environment
           Value: !Ref environment
+        - Key: Project
+          Value: github-actions-testing
 
 Outputs:
   CICDS3BucketName:
