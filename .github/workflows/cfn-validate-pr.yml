@@ -1,0 +1,81 @@
+# Workflow name displayed in GitHub Actions UI
+name: validate CloudFormation templates
+
+# Trigger conditions for this workflow
+on:
+  pull_request:  # Run when pull request is opened/updated
+    paths:  # Only run when files in these paths change
+      - '.github/cloudformation/**'  # CloudFormation template directory
+
+# GitHub token permissions needed for this workflow
+permissions:
+  pull-requests: write  # Allow commenting on pull requests
+  contents: read  # Allow reading repository contents
+
+# Define workflow jobs
+jobs:
+  # Job 1: Validate and deploy test stack
+  validate:
+    runs-on: ubuntu-latest  # Use Ubuntu runner
+    steps:
+      # Step 1: Download repository code
+      - name: Checkout repository
+        uses: actions/checkout@v3  # GitHub action to checkout code
+
+      # Step 2: Set up AWS authentication
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2  # AWS action for credentials
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}  # Access key from GitHub secrets
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  # Secret key from GitHub secrets
+          aws-region: us-east-2  # AWS region to use
+
+      # Step 3: Validate CloudFormation template syntax
+      - name: Validate CloudFormation template
+        run: |  # Multi-line shell script
+          set -e  # Exit on any error
+          aws cloudformation validate-template --template-body file://.github/cloudformation/s3-bucket.yml  # Validate template
+
+      # Step 4: Deploy test stack for PR testing
+      - name: Deploy CloudFormation stack
+        run: |  # Multi-line shell script
+          set -e  # Exit on any error
+          stack_name="CICD-S3-Bucket-${{ github.event.pull_request.number }}"  # Create unique stack name with PR number
+          aws cloudformation deploy \  # Deploy CloudFormation stack
+            --template-file .github/cloudformation/s3-bucket.yml \  # Template file path
+            --stack-name $stack_name \  # Stack name variable
+            --parameter-overrides environment=test  # Set environment parameter to test
+
+      # Step 5: Post comment on pull request with deployment info
+      - name: Comment on the pull request
+        uses: actions/github-script@v6  # GitHub action for API calls
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}  # GitHub token for authentication
+          script: |  # JavaScript code to run
+            github.rest.issues.createComment({  # Create PR comment
+              issue_number: ${{ github.event.pull_request.number }},  # PR number
+              owner: context.repo.owner,  # Repository owner
+              repo: context.repo.repo,  # Repository name
+              body: `CloudFormation test stack deployed. Stack name: CICD-S3-Bucket-${{ github.event.pull_request.number }}`  # Comment text
+            })
+
+  # Job 2: Clean up test stack when PR is merged
+  cleanup:
+    runs-on: ubuntu-latest  # Use Ubuntu runner
+    if: github.event.pull_request.merged == true  # Only run if PR was merged
+    steps:
+      # Step 1: Set up AWS authentication for cleanup
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2  # AWS action for credentials
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}  # Access key from GitHub secrets
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  # Secret key from GitHub secrets
+          aws-region: us-east-2  # AWS region to use
+
+      # Step 2: Delete the test stack to clean up resources
+      - name: Delete test stack
+        run: |  # Multi-line shell script
+          set -e  # Exit on any error
+          stack_name="CICD-S3-Bucket-${{ github.event.pull_request.number }}"  # Same stack name as created
+          aws cloudformation delete-stack --stack-name $stack_name  # Delete the CloudFormation stack
+                

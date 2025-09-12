@@ -1,3 +1,14 @@
+# GitHub Actions workflow for deploying Lambda function
+# This workflow automatically deploys your Lambda function when:
+# 1. Code is pushed to main branch in lambda/ directory
+# 2. This workflow file is modified
+# 3. Manually triggered via GitHub Actions UI
+#
+# Prerequisites:
+# - AWS_ACCESS_KEY_ID secret configured in GitHub repository
+# - AWS_SECRET_ACCESS_KEY secret configured in GitHub repository
+# - Lambda function 'Lambda_CICD_Testing' exists in us-east-2 region
+
 name: deploy-lambda
 
 on:
@@ -5,9 +16,9 @@ on:
     branches:
       - main
     paths:
-      - 'lambda/**'
-      - '.github/workflows/lambda-deploy.yml'
-  workflow_dispatch:
+      - 'lambda/**'  # Trigger on changes to lambda directory
+      - '.github/workflows/lambda-deploy.yml'  # Trigger on workflow changes
+  workflow_dispatch:  # Allow manual triggering
 
 jobs:
   deploy:

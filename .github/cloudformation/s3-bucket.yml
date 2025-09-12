@@ -1,0 +1,26 @@
+AWSTemplateVersion: '2010-09-09'
+Description: s3 bucket for CI/CD
+
+Parameters:
+  environment:
+    Type: String
+    Description: The environment name (e.g., dev, staging, prod)
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+    Default: test
+
+Resources:
+  CICDS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'cicd-bucket-${environment}-bucket'
+      Tags:
+        - Key: Environment
+          Value: !Ref environment
+
+Outputs:
+  CICDS3BucketName:
+    Description: S3 bucket name for CI/CD
+    Value: !Ref CICDS3Bucket
