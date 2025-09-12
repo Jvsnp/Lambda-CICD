@@ -1,5 +1,5 @@
 AWSTemplateVersion: '2010-09-09'
-Description: s3 bucket for CI/CD
+Description: S3 bucket for CI/CD pipeline testing
 
 Parameters:
   environment:
