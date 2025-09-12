@@ -44,7 +44,7 @@ jobs:
           aws cloudformation deploy \  # Deploy CloudFormation stack
             --template-file .github/cloudformation/s3-bucket.yml \  # Template file path
             --stack-name $stack_name \  # Stack name variable
-            --parameter-overrides environment=test  # Set environment parameter to test
+            --parameter-overrides environment=dev  # Set environment parameter to dev
 
       # Step 5: Post comment on pull request with deployment info
       - name: Comment on the pull request
