@@ -1,37 +1,47 @@
-name: Deploy Lambda Function
+name: deploy-lambda
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+    paths:
+      - 'lambda/**'
+      - '.github/workflows/lambda-deploy.yml'
   workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-    
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
-    
-    - name: Deploy Lambda function
-      run: |
-        zip -r lambda-function.zip lambda/
-        aws lambda update-function-code \
-          --function-name your-lambda-function-name \
-          --zip-file fileb://lambda-function.zip
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f lambda/requirements.txt ]; then pip install -r lambda/requirements.txt -t lambda/; fi
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+          mask-aws-account-id: false
+
+      - name: Verify AWS credentials
+        run: |
+          aws sts get-caller-identity
+          aws lambda list-functions --max-items 5
+
+      - name: Deploy to AWS Lambda function
+        run: |
+          cd lambda
+          zip -r ../lambda-deployment-package.zip .
+          aws lambda update-function-code --function-name Lambda_CICD_Testing --zip-file fileb://../lambda-deployment-package.zip
