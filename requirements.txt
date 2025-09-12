@@ -1,0 +1,2 @@
+# Add your Lambda dependencies here
+# Example: boto3==1.26.137
