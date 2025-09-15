@@ -1,10 +1,10 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: S3 bucket for CI/CD pipeline - updated
+Description: S3 bucket for CI/CD pipeline
 
 Parameters:
   environment:
     Type: String
-    Description: The environment name (e.g., dev, staging, prod)
+    Description: The environment name
     AllowedValues:
       - dev
       - staging
@@ -15,14 +15,29 @@ Resources:
   CICDS3Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub 'cicd-bucket-${environment}-bucket'
+      BucketName: !Sub 'cicd-bucket-${environment}-${AWS::AccountId}'
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
       Tags:
         - Key: Environment
           Value: !Ref environment
         - Key: Project
-          Value: github-actions-testing
+          Value: github-actions-cicd
 
 Outputs:
   CICDS3BucketName:
     Description: S3 bucket name for CI/CD
     Value: !Ref CICDS3Bucket
+    Export:
+      Name: !Sub '${AWS::StackName}-S3BucketName'
+  
+  CICDS3BucketArn:
+    Description: S3 bucket ARN for CI/CD
+    Value: !GetAtt CICDS3Bucket.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-S3BucketArn'
